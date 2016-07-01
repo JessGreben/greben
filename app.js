@@ -12,15 +12,16 @@ app.use(function (req, res, next) {
     next();
 });
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST of type x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 
-// Connect to our Database
+// connect to Database
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/blog');
+// connect to docker mongo container if present
+// otherwise connect to local mongo
+var mongo_host = process.env.mongo_host || 'localhost';
+mongoose.connect('mongodb://'+ mongo_host +':27017/blog');
 
 
 app.get('/', function (req, res) {
@@ -29,7 +30,7 @@ app.get('/', function (req, res) {
 
 
 //ROUTES
-app.use('/blog', blog); // routes/bike.js
+app.use('/blog', blog);
 
 /// catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -42,8 +43,6 @@ app.use(function (req, res, next) {
 /// Error Handlers
 
 // development error handler
-// will print stacktrace
-
 if (app.get('env') === 'development') {
     app.use(function (err, req, res, next) {
         res.status(err.status || 500)
@@ -66,8 +65,6 @@ app.use(function (err, req, res, next) {
         });
 });
 
-// START THE SERVER
-// =============================================================================
 var port = process.env.PORT || 8080;
 app.listen(port);
 console.log('You can find this app on localhost:' + port);
